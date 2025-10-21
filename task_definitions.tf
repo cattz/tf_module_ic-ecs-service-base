@@ -1,19 +1,4 @@
 # Custom task definitions (e.g., for migrations, one-off jobs)
-module "custom_task_definition" {
-  source  = "terraform-aws-modules/ecs/aws//modules/container-definition"
-  version = "5.12.1"
-
-  for_each = var.custom_task_definitions
-
-  name       = "${local.service_name}-${each.key}"
-  cpu        = each.value.cpu
-  memory     = each.value.memory
-  essential  = true
-
-  # This module is used to generate task definition JSON
-  # The actual task definition resource is created below
-}
-
 resource "aws_ecs_task_definition" "custom" {
   for_each = var.custom_task_definitions
 

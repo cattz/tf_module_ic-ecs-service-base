@@ -1,6 +1,6 @@
 module "ecs_service" {
   source  = "terraform-aws-modules/ecs/aws//modules/service"
-  version = "5.12.1"
+  version = "~> 6.0"
 
   name        = local.service_name
   cluster_arn = data.aws_ecs_cluster.cluster.arn
