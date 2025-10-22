@@ -4,7 +4,6 @@ module "ecs_iam_roles" {
   resources_prefix = var.resources_prefix
   environment      = var.environment
   name_suffix      = var.name_suffix
-  ecs_cluster_arn  = data.aws_ecs_cluster.cluster.arn
 
   ecs_services_ci_arns = [module.ecs_service.id]
 
@@ -14,7 +13,7 @@ module "ecs_iam_roles" {
   ]
 
   ecs_task_log_group_arn      = aws_cloudwatch_log_group.ecs_task.arn
-  ecr_repositories_arns       = var.ecr_repositories_arns
+  ecr_repository_arns         = var.ecr_repository_arns
   oidc_subjects               = var.oidc_subjects
   fluentbit_config_bucket_arn = var.fluentbit_container.config_bucket_arn
 

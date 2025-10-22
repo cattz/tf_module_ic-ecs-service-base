@@ -1,6 +1,6 @@
 module "ecs_service" {
   source  = "terraform-aws-modules/ecs/aws//modules/service"
-  version = "~> 6.0"
+  version = "~> 6.6" # Use latest 6.x version with bug fixes
 
   name        = local.service_name
   cluster_arn = data.aws_ecs_cluster.cluster.arn
@@ -11,9 +11,10 @@ module "ecs_service" {
   enable_execute_command = var.enable_execute_command
 
   # Network configuration
-  subnet_ids                = var.subnet_ids
-  security_group_ids        = var.service_security_groups
-  security_group_rules      = local.base_security_group_rules
+  subnet_ids                   = var.subnet_ids
+  security_group_ids           = var.service_security_groups
+  security_group_ingress_rules = local.base_security_group_rules_ingress
+  security_group_egress_rules  = local.base_security_group_rules_egress
 
   # IAM roles
   create_iam_role = false
@@ -33,22 +34,22 @@ module "ecs_service" {
   deployment_maximum_percent         = var.deployment_maximum_percent
 
   # Task volumes
-  volume = [
-    for volume_name, volume_config in var.task_volumes : merge(
+  volume = {
+    for volume_name, volume_config in var.task_volumes : volume_name => merge(
       {
         name = volume_name
       },
-        volume_config.efs_volume_configuration != null ? {
+      volume_config.efs_volume_configuration != null ? {
         efs_volume_configuration = volume_config.efs_volume_configuration
       } : {},
-        volume_config.host_path != null ? {
+      volume_config.host_path != null ? {
         host_path = volume_config.host_path
       } : {},
-        volume_config.docker_volume_configuration != null ? {
+      volume_config.docker_volume_configuration != null ? {
         docker_volume_configuration = volume_config.docker_volume_configuration
       } : {}
     )
-  ]
+  }
 
   # Container definitions
   container_definitions = local.container_definitions
@@ -56,15 +57,15 @@ module "ecs_service" {
   # Service Connect configuration
   service_connect_configuration = var.service_connect_config.enabled ? {
     namespace = var.service_discovery_namespace_arn
-    service = {
+    service = [{
       client_alias = {
         port     = var.primary_container.port
         dns_name = local.service_connect_dns_name
       }
       port_name      = var.primary_container.http_port_name
       discovery_name = local.service_name
-    }
-  } : {}
+    }]
+  } : null
 
   # Load balancer integration
   load_balancer = {

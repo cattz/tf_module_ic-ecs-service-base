@@ -47,9 +47,9 @@ resource "aws_ecs_task_definition" "custom" {
       environment = concat(
         [
           for idx, config_file in var.fluentbit_container.config_files : {
-          name  = "aws_fluent_bit_init_s3_${idx + 1}"
-          value = "${var.fluentbit_container.config_bucket_arn}/${config_file}"
-        }
+            name  = "aws_fluent_bit_init_s3_${idx + 1}"
+            value = "${var.fluentbit_container.config_bucket_arn}/${config_file}"
+          }
         ],
         [{
           name  = "CLOUDWATCH_LOG_GROUP"
@@ -60,51 +60,51 @@ resource "aws_ecs_task_definition" "custom" {
     # Custom containers
     [
       for container_name, container_config in each.value.containers : merge(
-      {
-        name                   = container_name
-        cpu                    = container_config.cpu
-        memory                 = container_config.memory
-        essential              = container_config.essential
-        image                  = "${container_config.image}:${container_config.image_tag}"
-        readonlyRootFilesystem = container_config.readonly_root_filesystem
+        {
+          name                   = container_name
+          cpu                    = container_config.cpu
+          memory                 = container_config.memory
+          essential              = container_config.essential
+          image                  = "${container_config.image}:${container_config.image_tag}"
+          readonlyRootFilesystem = container_config.readonly_root_filesystem
 
-        logConfiguration = {
-          logDriver = "awsfirelens"
-        }
-
-        portMappings = [
-          for pm in container_config.port_mappings : {
-            name          = pm.name
-            containerPort = pm.containerPort
-            hostPort      = try(pm.hostPort, pm.containerPort)
-            protocol      = try(pm.protocol, "tcp")
-            appProtocol   = try(pm.appProtocol, null)
+          logConfiguration = {
+            logDriver = "awsfirelens"
           }
-        ]
 
-        environment = [
-          for key, value in container_config.environment : {
-            name  = key
-            value = value
-          }
-        ]
+          portMappings = [
+            for pm in container_config.port_mappings : {
+              name          = pm.name
+              containerPort = pm.containerPort
+              hostPort      = try(pm.hostPort, pm.containerPort)
+              protocol      = try(pm.protocol, "tcp")
+              appProtocol   = try(pm.appProtocol, null)
+            }
+          ]
 
-        secrets = container_config.secrets
+          environment = [
+            for key, value in container_config.environment : {
+              name  = key
+              value = value
+            }
+          ]
 
-        dependsOn = [
-          for dep_name in container_config.depends_on_containers : {
-            containerName = dep_name
-            condition     = "START"
-          }
-        ]
+          secrets = container_config.secrets
 
-        volumesFrom  = container_config.volumes_from
-        mountPoints  = container_config.mount_points
-      },
+          dependsOn = [
+            for dep_name in container_config.depends_on_containers : {
+              containerName = dep_name
+              condition     = "START"
+            }
+          ]
+
+          volumesFrom = container_config.volumes_from
+          mountPoints = container_config.mount_points
+        },
         container_config.user != null ? { user = container_config.user } : {},
         container_config.command != null ? { command = container_config.command } : {},
         container_config.entrypoint != null ? { entryPoint = container_config.entrypoint } : {}
-    )
+      )
     ]
   ))
 
@@ -149,8 +149,8 @@ resource "aws_ecs_task_definition" "custom" {
   tags = merge(
     local.common_tags,
     {
-      Name        = "${local.service_name}-${each.key}"
-      TaskType    = each.key
+      Name     = "${local.service_name}-${each.key}"
+      TaskType = each.key
     }
   )
 }

@@ -69,9 +69,9 @@ output "ecs_task_execution_iam_role_arn" {
   value       = module.ecs_iam_roles.ecs_task_execution_iam_role_arn
 }
 
-output "ecs_ci_iam_role_arn" {
+output "github_oidc_role_arn" {
   description = "ARN of the ECS CI/CD IAM role"
-  value       = module.ecs_iam_roles.ecs_ci_iam_role_arn
+  value       = module.ecs_iam_roles.github_oidc_role_arn
 }
 
 output "ecs_task_iam_role_name" {
@@ -84,9 +84,9 @@ output "ecs_task_execution_iam_role_name" {
   value       = module.ecs_iam_roles.ecs_task_execution_iam_role_name
 }
 
-output "ecs_ci_iam_role_name" {
+output "github_oidc_role_name" {
   description = "Name of the ECS CI/CD IAM role"
-  value       = module.ecs_iam_roles.ecs_ci_iam_role_name
+  value       = module.ecs_iam_roles.github_oidc_role_name
 }
 
 # ========================================

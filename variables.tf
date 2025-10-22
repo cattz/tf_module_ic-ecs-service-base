@@ -366,11 +366,11 @@ variable "service_connect_config" {
 variable "autoscaling" {
   description = "ECS service autoscaling configuration"
   type = object({
-    enabled      = optional(bool, true)
-    min_capacity = optional(number, 1)
-    max_capacity = optional(number, 4)
-    cpu_target   = optional(number, 75)
-    memory_target = optional(number) # Optional memory-based scaling
+    enabled            = optional(bool, true)
+    min_capacity       = optional(number, 1)
+    max_capacity       = optional(number, 4)
+    cpu_target         = optional(number, 75)
+    memory_target      = optional(number) # Optional memory-based scaling
     scale_in_cooldown  = optional(number, 60)
     scale_out_cooldown = optional(number, 60)
   })
@@ -386,7 +386,7 @@ variable "autoscaling" {
 # IAM Configuration
 # ========================================
 
-variable "ecr_repositories_arns" {
+variable "ecr_repository_arns" {
   description = "List of ECR repository ARNs for the task execution role"
   type        = list(string)
 }
