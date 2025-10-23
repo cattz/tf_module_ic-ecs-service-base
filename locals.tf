@@ -10,6 +10,23 @@ locals {
     try(var.service_connect_config.dns_name, null),
     var.name_suffix
   )
+  # A bit clunky way to use a single secret for all test envs
+  secret_env        = contains(["acceptance1", "prod"], var.environment) ? var.environment : "test"
+  fluentbit_decoded = jsondecode(data.aws_secretsmanager_secret_version.fluentbit.secret_string)
+
+  # Common fluentbit configuration
+  fluentbit_log_options = {
+    Name               = "es"
+    Index              = "elastic_firelens"
+    Include_Tag_Key    = "true"
+    Tag_Key            = "tags"
+    tls                = "On"
+    "tls.verify"       = "Off"
+    Suppress_Type_Name = "On"
+    Cloud_Id           = local.fluentbit_decoded.cloud_id
+    Cloud_Auth         = local.fluentbit_decoded.cloud_auth
+  }
+
 
   # Build complete container definitions including FluentBit
   container_definitions = merge(
@@ -19,13 +36,13 @@ locals {
         memory    = var.fluentbit_container.memory
         essential = true
         image     = var.fluentbit_container.image
-        firelens_configuration = {
+        firelensConfiguration = {
           type = "fluentbit"
         }
         readonly_root_filesystem = false
         propagate_tags           = "SERVICE"
 
-        log_configuration = {
+        logConfiguration = {
           logDriver = "awslogs"
           options = {
             "awslogs-group"         = aws_cloudwatch_log_group.ecs_task.name
@@ -34,7 +51,7 @@ locals {
           }
         }
 
-        health_check = {
+        healthCheck = {
           command     = ["CMD-SHELL", "nc -z localhost 24224 || exit 1"]
           interval    = 10
           timeout     = 5
@@ -61,19 +78,20 @@ locals {
     {
       for name, container in var.containers : name => merge(
         {
-          cpu                      = container.cpu
-          memory                   = container.memory
-          essential                = container.essential
-          image                    = "${container.image}:${container.image_tag}"
-          readonly_root_filesystem = container.readonly_root_filesystem
-          propagate_tags           = "SERVICE"
+          cpu                    = container.cpu
+          memory                 = container.memory
+          essential              = container.essential
+          image                  = "${container.image}:${container.image_tag}"
+          readonlyRootFilesystem = container.readonly_root_filesystem
+          propagateTags          = "SERVICE"
 
           enable_cloudwatch_logging = false
-          log_configuration = {
+          logConfiguration = {
             logDriver = "awsfirelens"
+            options   = local.fluentbit_log_options
           }
 
-          port_mappings = container.port_mappings
+          portMappings = container.port_mappings
 
           environment = [
             for key, value in container.environment : {
@@ -84,20 +102,22 @@ locals {
 
           secrets = container.secrets
 
-          dependencies = [
+          healthCheck = container.health_check
+
+          dependsOn = [
             for dep_name in container.depends_on_containers : {
               containerName = dep_name
               condition     = "START"
             }
           ]
 
-          volumes_from = container.volumes_from
-          mount_points = container.mount_points
+          volumesFrom = container.volumes_from
+          mountPoints = container.mount_points
         },
         container.user != null ? { user = container.user } : {},
         container.command != null ? { command = container.command } : {},
         container.entrypoint != null ? { entrypoint = container.entrypoint } : {},
-        container.health_check != null ? { health_check = container.health_check } : {}
+        container.health_check != null ? { healthCheck = container.health_check } : {}
       )
     }
   )
@@ -108,7 +128,6 @@ locals {
       Environment    = var.environment
       Service        = local.service_name
       ManagedBy      = "Terraform"
-      ResourcePrefix = var.resources_prefix
     },
     var.tags
   )
@@ -137,7 +156,7 @@ locals {
         name                         = "AllowHealthCheckFromALB"
         from_port                    = tonumber(var.alb.health_check.port)
         to_port                      = tonumber(var.alb.health_check.port)
-        protocol                     = "tcp"
+        ip_protocol                  = "tcp"
         referenced_security_group_id = var.alb.security_group_id
       }
     } : {},
