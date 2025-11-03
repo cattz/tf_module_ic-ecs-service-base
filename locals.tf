@@ -40,7 +40,6 @@ locals {
           type = "fluentbit"
         }
         readonly_root_filesystem = false
-        propagate_tags           = "SERVICE"
 
         logConfiguration = {
           logDriver = "awslogs"
@@ -83,7 +82,6 @@ locals {
           essential              = container.essential
           image                  = "${container.image}:${container.image_tag}"
           readonlyRootFilesystem = container.readonly_root_filesystem
-          propagateTags          = "SERVICE"
 
           enable_cloudwatch_logging = false
           logConfiguration = {
@@ -125,9 +123,9 @@ locals {
   # Common tags
   common_tags = merge(
     {
-      Environment    = var.environment
-      Service        = local.service_name
-      ManagedBy      = "Terraform"
+      Environment = var.environment
+      Service     = local.service_name
+      ManagedBy   = "Terraform"
     },
     var.tags
   )

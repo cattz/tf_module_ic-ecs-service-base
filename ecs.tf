@@ -10,6 +10,8 @@ module "ecs_service" {
   # Enable ECS Exec for debugging
   enable_execute_command = var.enable_execute_command
 
+  propagate_tags = "SERVICE"
+
   # Network configuration
   subnet_ids                   = var.subnet_ids
   security_group_ids           = var.service_security_groups
