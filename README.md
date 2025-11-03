@@ -710,6 +710,11 @@ This module uses:
 
 | Name | Description |
 |------|-------------|
+| <a name="output_autoscaling_cpu_policy_arn"></a> [autoscaling\_cpu\_policy\_arn](#output\_autoscaling\_cpu\_policy\_arn) | ARN of the CPU autoscaling policy |
+| <a name="output_autoscaling_cpu_policy_name"></a> [autoscaling\_cpu\_policy\_name](#output\_autoscaling\_cpu\_policy\_name) | Name of the CPU autoscaling policy |
+| <a name="output_autoscaling_memory_policy_arn"></a> [autoscaling\_memory\_policy\_arn](#output\_autoscaling\_memory\_policy\_arn) | ARN of the memory autoscaling policy |
+| <a name="output_autoscaling_memory_policy_name"></a> [autoscaling\_memory\_policy\_name](#output\_autoscaling\_memory\_policy\_name) | Name of the memory autoscaling policy |
+| <a name="output_autoscaling_target_resource_id"></a> [autoscaling\_target\_resource\_id](#output\_autoscaling\_target\_resource\_id) | Resource ID of the autoscaling target |
 | <a name="output_custom_task_definitions"></a> [custom\_task\_definitions](#output\_custom\_task\_definitions) | Map of custom task definition ARNs |
 | <a name="output_dns_records"></a> [dns\_records](#output\_dns\_records) | Created DNS records |
 | <a name="output_ecs_task_execution_iam_role_arn"></a> [ecs\_task\_execution\_iam\_role\_arn](#output\_ecs\_task\_execution\_iam\_role\_arn) | ARN of the ECS task execution IAM role |

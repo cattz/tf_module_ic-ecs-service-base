@@ -133,3 +133,32 @@ output "dns_records" {
     }
   ]
 }
+
+# ========================================
+# Autoscaling Outputs
+# ========================================
+
+output "autoscaling_target_resource_id" {
+  description = "Resource ID of the autoscaling target"
+  value       = var.autoscaling.enabled ? aws_appautoscaling_target.ecs[0].resource_id : null
+}
+
+output "autoscaling_cpu_policy_arn" {
+  description = "ARN of the CPU autoscaling policy"
+  value       = var.autoscaling.enabled && var.autoscaling.cpu_target != null ? aws_appautoscaling_policy.cpu[0].arn : null
+}
+
+output "autoscaling_cpu_policy_name" {
+  description = "Name of the CPU autoscaling policy"
+  value       = var.autoscaling.enabled && var.autoscaling.cpu_target != null ? aws_appautoscaling_policy.cpu[0].name : null
+}
+
+output "autoscaling_memory_policy_arn" {
+  description = "ARN of the memory autoscaling policy"
+  value       = var.autoscaling.enabled && var.autoscaling.memory_target != null ? aws_appautoscaling_policy.memory[0].arn : null
+}
+
+output "autoscaling_memory_policy_name" {
+  description = "Name of the memory autoscaling policy"
+  value       = var.autoscaling.enabled && var.autoscaling.memory_target != null ? aws_appautoscaling_policy.memory[0].name : null
+}
