@@ -35,6 +35,9 @@ module "ecs_service" {
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   deployment_maximum_percent         = var.deployment_maximum_percent
 
+  # Circuit breaker for safer deployments
+  deployment_circuit_breaker = var.deployment_circuit_breaker
+
   # Task volumes
   volume = {
     for volume_name, volume_config in var.task_volumes : volume_name => merge(

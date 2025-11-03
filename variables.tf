@@ -103,6 +103,18 @@ variable "enable_execute_command" {
   default     = true
 }
 
+variable "deployment_circuit_breaker" {
+  description = "Deployment circuit breaker configuration for safer deployments"
+  type = object({
+    enable   = optional(bool, true)
+    rollback = optional(bool, true)
+  })
+  default = {
+    enable   = true
+    rollback = true
+  }
+}
+
 # ========================================
 # Container Configuration
 # ========================================
