@@ -74,7 +74,7 @@ resource "aws_appautoscaling_scheduled_action" "scale_down" {
   resource_id        = aws_appautoscaling_target.ecs[0].resource_id
   scalable_dimension = aws_appautoscaling_target.ecs[0].scalable_dimension
 
-  schedule = var.schedule.scale_down.cron
+  schedule = "cron(${var.schedule.scale_down.cron})"
 
   scalable_target_action {
     min_capacity = var.schedule.scale_down.min_capacity
@@ -92,7 +92,7 @@ resource "aws_appautoscaling_scheduled_action" "scale_up" {
   resource_id        = aws_appautoscaling_target.ecs[0].resource_id
   scalable_dimension = aws_appautoscaling_target.ecs[0].scalable_dimension
 
-  schedule = var.schedule.scale_up.cron
+  schedule = "cron(${var.schedule.scale_up.cron})"
 
   scalable_target_action {
     min_capacity = var.schedule.scale_up.min_capacity
