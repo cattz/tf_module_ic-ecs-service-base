@@ -594,54 +594,6 @@ module "adminpanel_service" {
 }
 ```
 
-### With Scheduled Scaling (Cost Optimization)
-
-```hcl
-module "test_service" {
-  source = "git@github.com:theinnercircle/tf_modules//ic-ecs-service-base?ref=main"
-
-  # ... basic configuration ...
-
-  # Auto-scaling must be enabled for scheduling to work
-  autoscaling = {
-    enabled      = true
-    min_capacity = 1
-    max_capacity = 4
-    cpu_target   = 75
-  }
-
-  # Schedule to automatically stop services after office hours
-  # and start them again in the morning (UTC timezone)
-  schedule = {
-    # Stop services at 21:00 UTC (saves costs overnight)
-    scale_down = {
-      min_capacity = 0  # Stop all tasks
-      max_capacity = 0
-      cron         = "0 21 ? * MON-FRI *"  # 21:00 UTC on weekdays
-    }
-
-    # Start services at 07:00 UTC (ready for business hours)
-    scale_up = {
-      min_capacity = 1  # Start at least 1 task
-      max_capacity = 4  # Allow scaling up to 4 tasks
-      cron         = "0 7 ? * MON-FRI *"   # 07:00 UTC on weekdays
-    }
-  }
-}
-```
-
-**Important Notes:**
-- Scheduling requires `autoscaling.enabled = true`
-- Cron expressions use UTC timezone
-- Format: `"<minute> <hour> <day-of-month> <month> <day-of-week> <year>"`
-- Use `?` for day-of-month when specifying day-of-week
-- Weekend schedules can be omitted by using `MON-FRI`
-- To convert from CET/CEST to UTC, subtract 1 hour (winter) or 2 hours (summer)
-
-**Example Timezones:**
-- 21:00 UTC = 22:00 CET (winter) = 23:00 CEST (summer)
-- 07:00 UTC = 08:00 CET (winter) = 09:00 CEST (summer)
-
 ## Container Configuration
 
 ### FluentBit (Fixed)
@@ -738,7 +690,7 @@ This module uses:
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.19.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.0 |
 
 ## Modules
 

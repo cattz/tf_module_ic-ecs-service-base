@@ -101,10 +101,11 @@ resource "aws_lb_listener_rule" "service" {
         content {
           # Automatically append DNS record FQDNs to user-provided host_header values
           # This ensures ALB routes traffic to all DNS records created for the service
-          values = concat(
+          # Use distinct() to avoid duplicates if user manually specified a DNS record
+          values = distinct(concat(
             host_header.value.values,
             local.dns_record_fqdns
-          )
+          ))
         }
       }
 
