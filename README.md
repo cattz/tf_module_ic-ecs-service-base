@@ -189,20 +189,20 @@ module "adminpanel_service" {
     migrations = {
       cpu    = 512
       memory = 1024
-      
+
       containers = {
         migration = {
           image      = "123456789012.dkr.ecr.us-east-1.amazonaws.com/app"
           image_tag  = "v1.0.0"
           cpu        = 256
           memory     = 512
-          
+
           command = ["php", "artisan", "migrate", "--force"]
-          
+
           environment = {
             APP_ENV = "production"
           }
-          
+
           secrets = [{
             name      = "DB_PASSWORD"
             valueFrom = "arn:aws:secretsmanager:..."
@@ -213,6 +213,54 @@ module "adminpanel_service" {
   }
 }
 ```
+
+### With Scheduled Scaling (Cost Optimization)
+
+```hcl
+module "test_service" {
+  source = "git@github.com:theinnercircle/tf_modules//ic-ecs-service-base?ref=main"
+
+  # ... basic configuration ...
+
+  # Auto-scaling must be enabled for scheduling to work
+  autoscaling = {
+    enabled      = true
+    min_capacity = 1
+    max_capacity = 4
+    cpu_target   = 75
+  }
+
+  # Schedule to automatically stop services after office hours
+  # and start them again in the morning (UTC timezone)
+  schedule = {
+    # Stop services at 21:00 UTC (saves costs overnight)
+    scale_down = {
+      min_capacity = 0  # Stop all tasks
+      max_capacity = 0
+      cron         = "0 21 ? * MON-FRI *"  # 21:00 UTC on weekdays
+    }
+
+    # Start services at 07:00 UTC (ready for business hours)
+    scale_up = {
+      min_capacity = 1  # Start at least 1 task
+      max_capacity = 4  # Allow scaling up to 4 tasks
+      cron         = "0 7 ? * MON-FRI *"   # 07:00 UTC on weekdays
+    }
+  }
+}
+```
+
+**Important Notes:**
+- Scheduling requires `autoscaling.enabled = true`
+- Cron expressions use UTC timezone
+- Format: `"<minute> <hour> <day-of-month> <month> <day-of-week> <year>"`
+- Use `?` for day-of-month when specifying day-of-week
+- Weekend schedules can be omitted by using `MON-FRI`
+- To convert from CET/CEST to UTC, subtract 1 hour (winter) or 2 hours (summer)
+
+**Example Timezones:**
+- 21:00 UTC = 22:00 CET (winter) = 23:00 CEST (summer)
+- 07:00 UTC = 08:00 CET (winter) = 09:00 CEST (summer)
 
 ## Requirements
 
@@ -546,6 +594,54 @@ module "adminpanel_service" {
 }
 ```
 
+### With Scheduled Scaling (Cost Optimization)
+
+```hcl
+module "test_service" {
+  source = "git@github.com:theinnercircle/tf_modules//ic-ecs-service-base?ref=main"
+
+  # ... basic configuration ...
+
+  # Auto-scaling must be enabled for scheduling to work
+  autoscaling = {
+    enabled      = true
+    min_capacity = 1
+    max_capacity = 4
+    cpu_target   = 75
+  }
+
+  # Schedule to automatically stop services after office hours
+  # and start them again in the morning (UTC timezone)
+  schedule = {
+    # Stop services at 21:00 UTC (saves costs overnight)
+    scale_down = {
+      min_capacity = 0  # Stop all tasks
+      max_capacity = 0
+      cron         = "0 21 ? * MON-FRI *"  # 21:00 UTC on weekdays
+    }
+
+    # Start services at 07:00 UTC (ready for business hours)
+    scale_up = {
+      min_capacity = 1  # Start at least 1 task
+      max_capacity = 4  # Allow scaling up to 4 tasks
+      cron         = "0 7 ? * MON-FRI *"   # 07:00 UTC on weekdays
+    }
+  }
+}
+```
+
+**Important Notes:**
+- Scheduling requires `autoscaling.enabled = true`
+- Cron expressions use UTC timezone
+- Format: `"<minute> <hour> <day-of-month> <month> <day-of-week> <year>"`
+- Use `?` for day-of-month when specifying day-of-week
+- Weekend schedules can be omitted by using `MON-FRI`
+- To convert from CET/CEST to UTC, subtract 1 hour (winter) or 2 hours (summer)
+
+**Example Timezones:**
+- 21:00 UTC = 22:00 CET (winter) = 23:00 CEST (summer)
+- 07:00 UTC = 08:00 CET (winter) = 09:00 CEST (summer)
+
 ## Container Configuration
 
 ### FluentBit (Fixed)
@@ -657,6 +753,8 @@ This module uses:
 |------|------|
 | [aws_appautoscaling_policy.cpu](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
 | [aws_appautoscaling_policy.memory](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
+| [aws_appautoscaling_scheduled_action.scale_down](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_scheduled_action) | resource |
+| [aws_appautoscaling_scheduled_action.scale_up](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_scheduled_action) | resource |
 | [aws_appautoscaling_target.ecs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_target) | resource |
 | [aws_cloudwatch_log_group.ecs_task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
 | [aws_ecs_task_definition.custom](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_task_definition) | resource |
@@ -665,6 +763,7 @@ This module uses:
 | [aws_route53_record.service](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_ecs_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ecs_cluster) | data source |
+| [aws_route53_zone.dns_zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
 | [aws_secretsmanager_secret.fluentbit](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_secretsmanager_secret_version.fluentbit](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret_version) | data source |
 
@@ -696,6 +795,7 @@ This module uses:
 | <a name="input_primary_container"></a> [primary\_container](#input\_primary\_container) | Configuration for the primary container (used for ALB target and Service Connect) | <pre>object({<br/>    name           = string<br/>    port           = number<br/>    http_port_name = string<br/>  })</pre> | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | AWS region | `string` | n/a | yes |
 | <a name="input_resources_prefix"></a> [resources\_prefix](#input\_resources\_prefix) | Prefix for all resources (e.g., 'theic') | `string` | `"theic"` | no |
+| <a name="input_schedule"></a> [schedule](#input\_schedule) | Optional schedule configuration to automatically start/stop the service.<br/>Useful for cost savings in non-production environments.<br/>Set to null to disable scheduling (default).<br/><br/>Timezone: Cron expressions use UTC by default.<br/><br/>Example for stopping at 19:00 UTC (20:00 CET) and starting at 07:00 UTC (08:00 CET) on weekdays:<pre>schedule = {<br/>  scale_down = {<br/>    min_capacity = 0<br/>    max_capacity = 0<br/>    cron         = "0 19 ? * MON-FRI *"  # 19:00 UTC weekdays<br/>  }<br/>  scale_up = {<br/>    min_capacity = 1<br/>    max_capacity = 4<br/>    cron         = "0 7 ? * MON-FRI *"   # 07:00 UTC weekdays<br/>  }<br/>}</pre> | <pre>object({<br/>    scale_down = optional(object({<br/>      min_capacity = number<br/>      max_capacity = number<br/>      cron         = string<br/>    }))<br/>    scale_up = optional(object({<br/>      min_capacity = number<br/>      max_capacity = number<br/>      cron         = string<br/>    }))<br/>  })</pre> | `null` | no |
 | <a name="input_service_connect_config"></a> [service\_connect\_config](#input\_service\_connect\_config) | Service Connect configuration | <pre>object({<br/>    enabled  = optional(bool, true)<br/>    dns_name = optional(string) # Defaults to name_suffix if not provided<br/>  })</pre> | <pre>{<br/>  "enabled": true<br/>}</pre> | no |
 | <a name="input_service_cpu"></a> [service\_cpu](#input\_service\_cpu) | CPU units for the ECS task (256, 512, 1024, 2048, 4096) | `number` | `512` | no |
 | <a name="input_service_discovery_namespace_arn"></a> [service\_discovery\_namespace\_arn](#input\_service\_discovery\_namespace\_arn) | ARN of the AWS Cloud Map namespace for Service Connect | `string` | n/a | yes |
@@ -726,6 +826,8 @@ This module uses:
 | <a name="output_github_oidc_role_name"></a> [github\_oidc\_role\_name](#output\_github\_oidc\_role\_name) | Name of the ECS CI/CD IAM role |
 | <a name="output_log_group_arn"></a> [log\_group\_arn](#output\_log\_group\_arn) | ARN of the CloudWatch log group |
 | <a name="output_log_group_name"></a> [log\_group\_name](#output\_log\_group\_name) | Name of the CloudWatch log group |
+| <a name="output_scheduled_action_scale_down_arn"></a> [scheduled\_action\_scale\_down\_arn](#output\_scheduled\_action\_scale\_down\_arn) | ARN of the scale down scheduled action (null if scheduling is disabled or autoscaling is disabled) |
+| <a name="output_scheduled_action_scale_up_arn"></a> [scheduled\_action\_scale\_up\_arn](#output\_scheduled\_action\_scale\_up\_arn) | ARN of the scale up scheduled action (null if scheduling is disabled or autoscaling is disabled) |
 | <a name="output_security_group_id"></a> [security\_group\_id](#output\_security\_group\_id) | Security group ID created by the ECS service module |
 | <a name="output_service_arn"></a> [service\_arn](#output\_service\_arn) | ARN of the ECS service |
 | <a name="output_service_id"></a> [service\_id](#output\_service\_id) | ID of the ECS service |

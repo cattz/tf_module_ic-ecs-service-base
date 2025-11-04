@@ -1,4 +1,9 @@
-# Custom task definitions (e.g., for migrations, one-off jobs)
+# ========================================
+# Custom Task Definitions
+# ========================================
+
+# Custom task definitions for one-off jobs (e.g., migrations, data processing)
+# These are separate from the main service task definition
 resource "aws_ecs_task_definition" "custom" {
   for_each = var.custom_task_definitions
 

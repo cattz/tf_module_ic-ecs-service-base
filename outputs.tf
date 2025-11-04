@@ -148,6 +148,16 @@ output "autoscaling_cpu_policy_arn" {
   value       = var.autoscaling.enabled && var.autoscaling.cpu_target != null ? aws_appautoscaling_policy.cpu[0].arn : null
 }
 
+output "scheduled_action_scale_down_arn" {
+  description = "ARN of the scale down scheduled action (null if scheduling is disabled or autoscaling is disabled)"
+  value       = var.autoscaling.enabled && var.schedule != null && var.schedule.scale_down != null ? aws_appautoscaling_scheduled_action.scale_down[0].arn : null
+}
+
+output "scheduled_action_scale_up_arn" {
+  description = "ARN of the scale up scheduled action (null if scheduling is disabled or autoscaling is disabled)"
+  value       = var.autoscaling.enabled && var.schedule != null && var.schedule.scale_up != null ? aws_appautoscaling_scheduled_action.scale_up[0].arn : null
+}
+
 output "autoscaling_cpu_policy_name" {
   description = "Name of the CPU autoscaling policy"
   value       = var.autoscaling.enabled && var.autoscaling.cpu_target != null ? aws_appautoscaling_policy.cpu[0].name : null

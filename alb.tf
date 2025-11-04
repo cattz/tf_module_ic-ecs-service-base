@@ -1,3 +1,31 @@
+# ========================================
+# Data Sources
+# ========================================
+
+# Fetch Route53 hosted zone details to get the zone name
+# Used to automatically construct FQDNs from dns_records
+data "aws_route53_zone" "dns_zone" {
+  count   = var.dns_zone_id != "" ? 1 : 0
+  zone_id = var.dns_zone_id
+}
+
+# ========================================
+# Local Variables for ALB Configuration
+# ========================================
+
+locals {
+  # Extract DNS record names and construct their FQDNs
+  # These will be automatically added to host_header conditions in ALB listener rules
+  dns_record_fqdns = length(data.aws_route53_zone.dns_zone) > 0 ? [
+    for record in var.dns_records :
+    "${record.name}.${data.aws_route53_zone.dns_zone[0].name}"
+  ] : []
+}
+
+# ========================================
+# Target Group
+# ========================================
+
 # Target Group for the ECS service
 resource "aws_lb_target_group" "service" {
   name     = "${local.service_name}-tg"
@@ -42,7 +70,10 @@ resource "aws_lb_target_group" "service" {
   }
 }
 
+# ========================================
 # ALB Listener Rules
+# ========================================
+
 resource "aws_lb_listener_rule" "service" {
   count = length(var.alb_listener_rules)
 
@@ -68,7 +99,12 @@ resource "aws_lb_listener_rule" "service" {
       dynamic "host_header" {
         for_each = condition.value.host_header != null ? [condition.value.host_header] : []
         content {
-          values = host_header.value.values
+          # Automatically append DNS record FQDNs to user-provided host_header values
+          # This ensures ALB routes traffic to all DNS records created for the service
+          values = concat(
+            host_header.value.values,
+            local.dns_record_fqdns
+          )
         }
       }
 

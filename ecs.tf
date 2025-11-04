@@ -1,3 +1,8 @@
+# ========================================
+# ECS Service
+# ========================================
+
+# ECS service module using the official Terraform AWS ECS module
 module "ecs_service" {
   source  = "terraform-aws-modules/ecs/aws//modules/service"
   version = "~> 6.6" # Use latest 6.x version with bug fixes

@@ -394,6 +394,45 @@ variable "autoscaling" {
   }
 }
 
+variable "schedule" {
+  description = <<-EOT
+    Optional schedule configuration to automatically start/stop the service.
+    Useful for cost savings in non-production environments.
+    Set to null to disable scheduling (default).
+
+    Timezone: Cron expressions use UTC by default.
+
+    Example for stopping at 19:00 UTC (20:00 CET) and starting at 07:00 UTC (08:00 CET) on weekdays:
+    ```
+    schedule = {
+      scale_down = {
+        min_capacity = 0
+        max_capacity = 0
+        cron         = "0 19 ? * MON-FRI *"  # 19:00 UTC weekdays
+      }
+      scale_up = {
+        min_capacity = 1
+        max_capacity = 4
+        cron         = "0 7 ? * MON-FRI *"   # 07:00 UTC weekdays
+      }
+    }
+    ```
+  EOT
+  type = object({
+    scale_down = optional(object({
+      min_capacity = number
+      max_capacity = number
+      cron         = string
+    }))
+    scale_up = optional(object({
+      min_capacity = number
+      max_capacity = number
+      cron         = string
+    }))
+  })
+  default = null
+}
+
 # ========================================
 # IAM Configuration
 # ========================================

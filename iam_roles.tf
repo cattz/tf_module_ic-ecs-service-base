@@ -1,3 +1,9 @@
+# ========================================
+# IAM Roles
+# ========================================
+
+# ECS IAM roles module
+# Creates task role, task execution role, and GitHub OIDC role for CI/CD
 module "ecs_iam_roles" {
   source = "git@github.com:theinnercircle/tf_module_ecs-iam-roles.git?ref=main"
 

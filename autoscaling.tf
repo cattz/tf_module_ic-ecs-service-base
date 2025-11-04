@@ -59,3 +59,43 @@ resource "aws_appautoscaling_policy" "memory" {
     }
   }
 }
+
+# ========================================
+# Scheduled Scaling Actions
+# ========================================
+
+# Scale down action (e.g., stop service after office hours)
+# Note: Requires autoscaling to be enabled
+resource "aws_appautoscaling_scheduled_action" "scale_down" {
+  count = var.autoscaling.enabled && var.schedule != null && var.schedule.scale_down != null ? 1 : 0
+
+  name               = "${local.service_name}-scale-down"
+  service_namespace  = aws_appautoscaling_target.ecs[0].service_namespace
+  resource_id        = aws_appautoscaling_target.ecs[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs[0].scalable_dimension
+
+  schedule = var.schedule.scale_down.cron
+
+  scalable_target_action {
+    min_capacity = var.schedule.scale_down.min_capacity
+    max_capacity = var.schedule.scale_down.max_capacity
+  }
+}
+
+# Scale up action (e.g., start service during office hours)
+# Note: Requires autoscaling to be enabled
+resource "aws_appautoscaling_scheduled_action" "scale_up" {
+  count = var.autoscaling.enabled && var.schedule != null && var.schedule.scale_up != null ? 1 : 0
+
+  name               = "${local.service_name}-scale-up"
+  service_namespace  = aws_appautoscaling_target.ecs[0].service_namespace
+  resource_id        = aws_appautoscaling_target.ecs[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs[0].scalable_dimension
+
+  schedule = var.schedule.scale_up.cron
+
+  scalable_target_action {
+    min_capacity = var.schedule.scale_up.min_capacity
+    max_capacity = var.schedule.scale_up.max_capacity
+  }
+}

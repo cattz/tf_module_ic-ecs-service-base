@@ -1,3 +1,8 @@
+# ========================================
+# Route53 DNS Records
+# ========================================
+
+# DNS records for the service
 resource "aws_route53_record" "service" {
   count = length(var.dns_records)
 

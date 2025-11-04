@@ -1,3 +1,9 @@
+# ========================================
+# Secrets Manager
+# ========================================
+
+# FluentBit Elasticsearch credentials
+# Used to configure FluentBit sidecar for log forwarding
 data "aws_secretsmanager_secret" "fluentbit" {
   name = "ic/${local.secret_env}/elastic/fluentbit"
 }

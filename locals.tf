@@ -1,3 +1,7 @@
+# ========================================
+# Local Values
+# ========================================
+
 locals {
   # Service naming
   service_name = "${var.resources_prefix}-${var.environment}-${var.name_suffix}"
