@@ -5,7 +5,7 @@
 # ECS service module using the official Terraform AWS ECS module
 module "ecs_service" {
   source  = "terraform-aws-modules/ecs/aws//modules/service"
-  version = "~> 6.6" # Use latest 6.x version with bug fixes
+  version = "~> 6.7" # Use latest 6.x version with bug fixes
 
   name        = local.service_name
   cluster_arn = data.aws_ecs_cluster.cluster.arn

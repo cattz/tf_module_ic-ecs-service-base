@@ -697,7 +697,7 @@ This module uses:
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_ecs_iam_roles"></a> [ecs\_iam\_roles](#module\_ecs\_iam\_roles) | git@github.com:theinnercircle/tf_module_ecs-iam-roles.git | main |
-| <a name="module_ecs_service"></a> [ecs\_service](#module\_ecs\_service) | terraform-aws-modules/ecs/aws//modules/service | ~> 6.6 |
+| <a name="module_ecs_service"></a> [ecs\_service](#module\_ecs\_service) | terraform-aws-modules/ecs/aws//modules/service | ~> 6.7 |
 
 ## Resources
 
